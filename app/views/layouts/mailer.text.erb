@@ -1,1 +1,6 @@
-<%= yield %>
+<%= form_for(@message) do |f| %>
+  <%= f.label :content, 'メッセージ' %>
+  <%= f.text_field :content %>
+
+  <%= f.submit '投稿' %>
+<% end %>

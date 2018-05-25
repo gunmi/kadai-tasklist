@@ -61,8 +61,9 @@ class TasksController < ApplicationController
 
   # Strong Parameter
 
- def task_params
+  def task_params
     params.require(:task).permit(:content)
+  end  
   
 
   def correct_user
@@ -71,7 +72,6 @@ class TasksController < ApplicationController
       redirect_to root_url
     end
   end
- end
  
  def task_params
     params.require(:task).permit(:content, :status)

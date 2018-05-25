@@ -1,9 +1,15 @@
 class TasksController < ApplicationController
+   before_action :require_user_logged_in
+   before_action :correct_user, only: [:destroy]
    before_action :set_task, only: [:show, :edit, :update, :destroy]
-  def index
-    @tasks = Task.order(created_at: :desc).page(params[:page]).per(3)
-
-  end
+ 
+ def index
+    if logged_in?
+      @user = current_user
+      @task = current_user.tasks.build  # form_for 用
+      @tasks = current_user.tasks.order('created_at DESC').page(params[:page])
+    end
+ end
 
   def show
   end
@@ -13,28 +19,22 @@ class TasksController < ApplicationController
   end
 
   def create
-    #binding.pry
-    # p "#####################"
-    # p "task_params"
-    # p task_params
-     @task = Task.new(task_params)
-
+    @task = current_user.tasks.build(task_params)
     if @task.save
-      flash[:success] = 'Task が正常に投稿されました'
-      redirect_to @task
+      flash[:success] = 'メッセージを投稿しました。'
+      redirect_to root_url
     else
-      flash.now[:danger] = 'Task が投稿されませんでした'
-      render :new
+      @tasks = current_user.tasks.order('created_at DESC').page(params[:page])
+      flash.now[:danger] = 'メッセージの投稿に失敗しました。'
+      render 'tasks/index'
     end
   end
-
+  
   def edit
-   
   end
 
   def update
      
-
     if @task.update(task_params)
       flash[:success] = 'Task は正常に更新されました'
       redirect_to @task
@@ -50,7 +50,8 @@ class TasksController < ApplicationController
 
     flash[:success] = 'Task は正常に削除されました'
     redirect_to tasks_url
-  end
+  end  
+
   
    private
    
@@ -59,8 +60,20 @@ class TasksController < ApplicationController
    end   
 
   # Strong Parameter
+
+ def task_params
+    params.require(:task).permit(:content)
   
-  def task_params
-    params.require(:task).permit(:content, :status)
+
+  def correct_user
+    @task = current_user.tasks.find_by(id: params[:id])
+    unless @task
+      redirect_to root_url
+    end
   end
+ end
+ 
+ def task_params
+    params.require(:task).permit(:content, :status)
+ end
 end
